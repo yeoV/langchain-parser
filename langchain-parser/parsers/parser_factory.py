@@ -3,12 +3,11 @@ from typing import TYPE_CHECKING, Optional, Tuple, Type
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
-
-from langchain_core.output_parsers import PydanticOutputParser, StrOutputParser
+from langchain_core.output_parsers import PydanticOutputParser
 
 
 def create_pydantic_parser(
-    pydantic_class: Type[BaseModel], get_instruction: False
+    pydantic_class: Type["BaseModel"], get_instruction: False
 ) -> Tuple[PydanticOutputParser, Optional[str]]:
     """
     PydanticOutputParser 객체와 포맷 명령어를 반환하는 함수.
@@ -27,7 +26,3 @@ def create_pydantic_parser(
     if get_instruction:
         instruction = parser.get_format_instructions()
     return parser, instruction
-
-
-def create_str_parser():
-    return StrOutputParser()

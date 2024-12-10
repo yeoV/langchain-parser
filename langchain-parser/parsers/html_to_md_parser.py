@@ -5,7 +5,3 @@ from pydantic import BaseModel, Field
 class HtmlToMdParser(BaseModel):
     output: str = Field(description="")
     rules: str = Field(description="")
-
-
-if __name__ == "__main__":
-    print(type(HtmlToMdParser))
