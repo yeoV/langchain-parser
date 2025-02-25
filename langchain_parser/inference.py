@@ -2,7 +2,9 @@ import asyncio
 from typing import Dict, List
 
 from langchain_core.runnables.base import RunnableSerializable
-
+from langchain_core.exceptions import OutputParserException
+from json.decoder import JSONDecodeError
+from openai import BadRequestError
 
 def infer_single_sync(chain: RunnableSerializable, input: Dict[str, str]) -> str:
     """
@@ -36,10 +38,13 @@ async def infer_multiple_async(
 
     async def _call(input):
         k, v = next(iter(input.items()))
-        res = await chain.ainvoke(v)
-        return {k: res}
+        try:
+            res = await chain.ainvoke(v)
+            return {k: res.output}
+        except (OutputParserException, JSONDecodeError, BadRequestError) as e:
+            raise f"Failed to parse {k} with {e}"
 
-    tasks = [_call(input) for input in inputs]
+    tasks = [asyncio.create_task(_call(input)) for input in inputs]
     return await asyncio.gather(*tasks, return_exceptions=False)
 
 
@@ -48,6 +53,7 @@ def _split_list_into_batches(data, batch_size: int):
         yield data[i : i + batch_size]
 
 
+# 여기서 뭔가 핸들러 뭔가가 뭔간가
 async def infer_batches_async(
     chain: RunnableSerializable, data: List[Dict[str, str]], batch_size=100
 ) -> List:
